@@ -2,15 +2,17 @@ import asyncio
 import logging
 from typing import Any
 from model import Trade
+from ch_writer import ClickhouseWriter
 
 log = logging.getLogger("pollector")
 
 
 class ServerProtocol(asyncio.DatagramProtocol):
-    def __init__(self, queue: asyncio.Queue[str]) -> None:
+    def __init__(self, queue: asyncio.Queue[str], writer: ClickhouseWriter) -> None:
         self.queue = queue
         self.drop_count = 0
         self.msg_count = 0
+        self.writer = writer
 
     def datagram_received(self, data: bytes, addr: tuple[str | Any, int]) -> None:
         try:
@@ -18,6 +20,12 @@ class ServerProtocol(asyncio.DatagramProtocol):
         except asyncio.QueueFull:
             log.warning(f"Dropped message from: {addr}")
             self.drop_count += 1
+
+    async def write(self) -> None:
+        while True:
+            data = await self.queue.get()
+            trade = Trade.from_string(data)
+            await self.writer.write_trade(trade)
 
     async def worker(self) -> None:
         while True:
@@ -30,18 +38,21 @@ class ServerProtocol(asyncio.DatagramProtocol):
 
 async def main() -> None:
     logging.basicConfig(level=logging.DEBUG)
+    await asyncio.sleep(10)
     log.info("Starting UDP server")
 
-    queue: asyncio.Queue[str] = asyncio.Queue(maxsize=10)
+    writer = ClickhouseWriter()
+    await writer.connect()
+    queue: asyncio.Queue[str] = asyncio.Queue(maxsize=100_000)
 
     loop = asyncio.get_running_loop()
 
     transport, protocol = await loop.create_datagram_endpoint(
-        lambda: ServerProtocol(queue), local_addr=("0.0.0.0", 9999)
+        lambda: ServerProtocol(queue, writer), local_addr=("0.0.0.0", 9999)
     )
 
     try:
-        await protocol.worker()
+        await protocol.write()
     finally:
         transport.close()
 
