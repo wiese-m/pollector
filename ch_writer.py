@@ -5,7 +5,7 @@ from model import Trade
 
 
 class ClickhouseWriter:
-    def __init__(self, batch_size: int = 100) -> None:
+    def __init__(self, batch_size: int = 10_000) -> None:
         self._client: AsyncClient | None = None
         # self._trades_ctx: InsertContext | None = None
         self._batch_size = batch_size

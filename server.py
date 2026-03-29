@@ -26,14 +26,13 @@ class ServerProtocol(asyncio.DatagramProtocol):
             data = await self.queue.get()
             trade = Trade.from_string(data)
             await self.writer.write_trade(trade)
-
-    async def worker(self) -> None:
-        while True:
-            data = await self.queue.get()
-            trade = Trade.from_string(data)
             self.msg_count += 1
-            # log.info(trade)
-            log.info(f"Total messages: {self.msg_count}")
+
+    async def monitor(self) -> None:
+        while True:
+            await asyncio.sleep(10)
+            log.info(f"Queue size: {self.queue.qsize()}")
+            log.info(f"Trades written: {self.msg_count}")
 
 
 async def main() -> None:
@@ -52,7 +51,7 @@ async def main() -> None:
     )
 
     try:
-        await protocol.write()
+        await asyncio.gather(protocol.write(), protocol.monitor())
     finally:
         transport.close()
 
