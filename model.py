@@ -29,7 +29,7 @@ class Trade(NamedTuple):
         return f"{self.receive_time_ns}|{self.exchange}|{self.symbol}|{self.price}|{self.qty}|{self.is_taker_sell}|{self.id}"
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     t = Trade.from_string(TRADE_DATA_EXAMPLE)
     print(t)
     print(t.to_string())

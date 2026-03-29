@@ -18,7 +18,7 @@ class ClientProtocol:
         self.transport.close()
 
     def error_received(self, exc):
-        print('Error received:', exc)
+        print("Error received:", exc)
 
     def connection_lost(self, exc):
         print("Connection closed")
@@ -28,7 +28,7 @@ class ClientProtocol:
 async def worker(transport: asyncio.DatagramTransport) -> None:
     while True:
         transport.sendto(TRADE_DATA_EXAMPLE.encode())
-        await asyncio.sleep(0.100)
+        await asyncio.sleep(0)
 
 
 async def main():
@@ -37,8 +37,8 @@ async def main():
     on_con_lost = loop.create_future()
 
     transport, protocol = await loop.create_datagram_endpoint(
-        lambda: ClientProtocol(on_con_lost),
-        remote_addr=('127.0.0.1', 9999))
+        lambda: ClientProtocol(on_con_lost), remote_addr=("127.0.0.1", 9999)
+    )
 
     asyncio.create_task(worker(transport))
     try:
