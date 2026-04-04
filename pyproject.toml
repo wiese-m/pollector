@@ -5,7 +5,7 @@ description = "Collector app written in Python"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "aiohttp>=3.13.5",
     "clickhouse-connect>=0.15.0",
-    "requests>=2.33.0",
     "websockets>=16.0",
 ]
