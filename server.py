@@ -54,6 +54,7 @@ async def main() -> None:
     try:
         await asyncio.gather(protocol.write(), protocol.monitor())
     finally:
+        await writer.flush()
         transport.close()
 
 
