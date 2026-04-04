@@ -14,6 +14,6 @@ class ClientProtocol(asyncio.DatagramProtocol):
 
     def connection_lost(self, exc: Exception | None) -> None:
         if exc is None:
-            print("Connection closed OK")
+            print("UDP Connection closed OK")
         else:
-            print("Connection closed with exception:", exc)
+            print("UDP Connection closed with exception:", exc)
